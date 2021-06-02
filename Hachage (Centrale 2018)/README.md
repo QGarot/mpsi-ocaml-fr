@@ -1,4 +1,4 @@
-## Table de hachage (Centrale 2018)
+## [EXO] Table de hachage (Centrale 2018)
 
 Une structure de dictionnaire est un ensemble de couples (clé, élément), les clés (nécessairement distinctes)
 appartenant à un même ensemble 𝐾, les éléments à un ensemble 𝐸. La structure doit garantir les opérations
