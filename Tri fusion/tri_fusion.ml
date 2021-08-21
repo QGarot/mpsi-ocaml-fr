@@ -35,12 +35,17 @@ let fusion (a : int array) (b : int array) : int array =
 fusion [| 1; 2; 5|] [| 3; 4 |];;
 
 let division (t : int array) : int array * int array =
-	let n = Array.length t in
-	let t1 = Array.make (n / 2) 0 and t2 = Array.make (n - n / 2) 0 in
-	for i = 0 to n - 1 do
-			print_string "c";
-		if i < n / 2 then t1.(i) <- t.(i) else t2.(i - n / 2) <- t.(i);
-	done;
-	(t1, t2);;
+  let n = Array.length t in
+  let t1 = Array.make (n / 2) 0 and t2 = Array.make (n - n / 2) 0 in
+  for i = 0 to n - 1 do
+    if i < n / 2 then t1.(i) <- t.(i) else t2.(i - n / 2) <- t.(i);
+  done;
+  (t1, t2);;
 	
 division [| 1; 2; 3; 4; 5; 6; 7; 5; 8 |];;
+
+let rec tri_fusion (t : int array) : int array =
+  if Array.length t <= 1 then t
+  else let (t1, t2) = division t in fusion (tri_fusion t1) (tri_fusion t2);;
+
+tri_fusion [| 1500;3000;18000;7;5;9;95;21;350000;12 |];;
