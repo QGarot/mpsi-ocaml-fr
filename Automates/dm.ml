@@ -108,22 +108,25 @@ type ('a, 'b) automaton = {
 };;
 (*Q8*)
 (*Retourne la liste triée contenant les images de chaque élément de 'states' par la fonction delta.
-Pour déterminer l'image d'un état 'state' et d'une lettre 'letter', chercher l'élément de delta de la forme
+Pour déterminer l'image d'un état 'state' et d'une lettre 'letter', chercher l'élément de delta sous la forme
 ((state, letter),x) pour retourner x. Si cet élément n'est pas trouvé, alors delta n'est pas définie pour
-les valeurs 'state' et 'letter'*)
+les valeurs 'state' et 'letter'. Puis, calculer la liste des images.*)
 let delta_set (aut: ('a, 'b) automaton) (states: 'a list) (letter: 'b) : 'a list =
-	let delta = aut.delta in
-	let delta_transition (state: 'a) : 'a = 
+	let rec image (delta: (('a * 'b) * 'a) list) (state: 'a) : 'a = 
 		match delta with
-		| [] -> failwith "fonction non définie pour ces valeurs"
-		| ((s1, l), s2)::q -> if s1 = state && l = letter then s2 else delta_transition q state letter
-	in sort(map delta_transition states);;
+		| [] -> failwith "La fonction de transition n'est pas définie pour ces valeurs"
+		| ((s1, l), s2)::q -> if s1 = state && l = letter then s2 else image q state
+	in let rec image_list (l: 'a list) : 'a list =
+		match l with
+		| [] -> []
+		| h::q -> (image aut.delta h) :: (image_list q) 
+	in sort (image_list states);;
 (*test*)
-let autom = {
-	initial = [];
-	accepting = [];
+let x = {
+	initial = [1];
+	accepting = [3];
 	delta = [((1, "a"), 3); ((2, "a"), 1); ((3, "a"), 2)]
-} and
-states = [1;2;3;3] and
-letter = "a" in
-delta_set autom states letter;;
+};;
+let states = [1;2;3;3];;
+let letter = "a";;
+delta_set x states letter;;
