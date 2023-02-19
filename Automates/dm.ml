@@ -1,8 +1,8 @@
 (* -- Fonctions utilitaires -- *)
 
 (*Q1*)
-(*mem prend en paramètre une list l d'éléments de type a et un élément x
-de type a. Retourne true si x est élément de l.*)
+(*mem prend en paramètre une liste l d'éléments de type a et un élément x
+de type a. Retourne true si x est élément de l, false sinon*)
 let rec mem (l: 'a list) (x: 'a) : bool =
 	match l with
 	| [] -> false
@@ -15,10 +15,8 @@ l'union de l1 et de la queue en conservant la tête.*)
 let rec union (l1: 'a list) (l2: 'a list) : 'a list =
 	match l2 with
 	| [] -> l1
-	| h::q -> if mem l1 h then
-					union l1 q
-				else
-					h :: (union l1 q);;
+	| h::q -> if mem l1 h then union l1 q
+				 else h :: (union l1 q);;
 (*test*)
 union [5;6] [7;8;5];;
 
@@ -33,10 +31,8 @@ de l2*)
 let rec intersection (l1: 'a list) (l2: 'a list) : 'a list =
 	match l2 with
 	| [] -> []
-	| h::q -> if mem l1 h then
-					h :: (intersection l1 q)
-				else
-					intersection l1 q;;
+	| h::q -> if mem l1 h then  h :: (intersection l1 q)
+				 else intersection l1 q;;
 (*test*)
 intersection [5;6;8] [7;8;5];;
 
@@ -74,3 +70,60 @@ let sort (l: 'a list) : 'a list =
 	List.sort compare l;;
 (*test*)
 sort [5;4;2;3;8;88];;
+
+
+(* -- Langages locaux et linéaires -- *)
+
+type 'a regexp = 
+| Eps
+| Letter of 'a
+| Union of 'a regexp * 'a regexp
+| Concat of 'a regexp * 'a regexp
+| Star of 'a regexp;;
+(*Q5*)
+(*Récuperer de manière récursive le préfixe d'une expression régulière en la déconstruisant*)
+let rec get_prefix (e: 'a regexp) : 'a list = 
+	match e with
+	| Eps -> []
+	| Letter (a) -> [a]
+	| Union (a, b) -> (get_prefix a) @ (get_prefix b)
+	| Concat (a, b) -> (get_prefix a) @ (if a = Eps then get_prefix b else [])
+	| Star (a) -> [] :: (get_prefix a);;
+(*De même pour récupérer les suffixes*)
+let rec get_suffix (e: 'a regexp) : 'a list =
+	match e with
+	| Eps -> []
+	| Letter (a) -> [a]
+	| Union (a, b) -> (get_suffix a) @ (get_suffix b)
+	| Concat (a, b) -> (if b = Eps then get_suffix a else []) @ (get_suffix b)
+	| Star (a) -> [] :: (get_suffix a);;
+(*Facteurs?*)
+
+(* -- Automates -- *)
+
+type ('a, 'b) automaton = {
+	initial: 'a list;
+	accepting: 'a list;
+	delta: (('a * 'b) * 'a) list
+};;
+(*Q8*)
+(*Retourne la liste triée contenant les images de chaque élément de 'states' par la fonction delta.
+Pour déterminer l'image d'un état 'state' et d'une lettre 'letter', chercher l'élément de delta de la forme
+((state, letter),x) pour retourner x. Si cet élément n'est pas trouvé, alors delta n'est pas définie pour
+les valeurs 'state' et 'letter'*)
+let delta_set (aut: ('a, 'b) automaton) (states: 'a list) (letter: 'b) : 'a list =
+	let delta = aut.delta in
+	let delta_transition (state: 'a) : 'a = 
+		match delta with
+		| [] -> failwith "fonction non définie pour ces valeurs"
+		| ((s1, l), s2)::q -> if s1 = state && l = letter then s2 else delta_transition q state letter
+	in sort(map delta_transition states);;
+(*test*)
+let autom = {
+	initial = [];
+	accepting = [];
+	delta = [((1, "a"), 3); ((2, "a"), 1); ((3, "a"), 2)]
+} and
+states = [1;2;3;3] and
+letter = "a" in
+delta_set autom states letter;;
